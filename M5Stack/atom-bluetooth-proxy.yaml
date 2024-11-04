@@ -1,0 +1,97 @@
+# Description: This is a simple sensor that uses the M5 Atom Lite to track the presence 
+# of a Bluetooth device.
+substitutions:
+  name: atom-bluetooth-beacon
+  friendly_name: Bluetooth Proxy
+
+packages:
+  esphome.bluetooth-proxy: github://esphome/firmware/bluetooth-proxy/m5stack-atom-lite.yaml@main
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  min_version: 2024.6.0
+  project:
+    name: dontevenb.link_ble_beacon
+    version: "24.10.0.1"
+
+
+esp32:
+  board: m5stack-atom
+  framework:
+    type: esp-idf
+    min_version: 4.4
+
+api:
+  encryption:
+    key: !secret m5_api_encryption_key
+      
+wifi:
+  fast_connect: true
+  power_save_mode: none
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+sensor:
+  - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
+    name: "WiFi Signal dB"
+    id: wifi_signal_db
+    update_interval: 60s
+    entity_category: "diagnostic"
+
+  - platform: copy # Reports the WiFi signal strength in %
+    source_id: wifi_signal_db
+    name: "WiFi Signal Percent"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "Signal %"
+    entity_category: "diagnostic"
+    device_class: ""
+
+  # This section defines the LED output configuration for the ESPHome device.
+  # It specifies the settings and parameters required to control the LED on the M5Stack Atom.
+output:
+  - platform: ledc
+    pin: GPIO27
+    id: led_output
+
+# Configuration for defining light entities in the ESPHome setup for the M5Stack Atom based Bluetooth Proxy.
+# THis LED light entity is to provide feedback on the sensor's status.
+light:
+  - platform: monochromatic
+    name: "M5 Atom LED"
+    output: led_output
+    id: m5_atom_led
+
+# This configuration sets up an ESP32 BLE beacon using ESPHome.
+# The BLE beacon allows the ESP32 to broadcast its presence to nearby Bluetooth devices.
+# This can be useful for presence detection, asset tracking, or other applications
+# where you need to detect the proximity of the ESP32 device.
+esp_32_ble_beacon:
+  type: iBeacon
+  uuid: f562f365-96ac-c76c-0127-d57bd158eb17
+  major: 40
+  minor: 1
+ 
+
+# This configuration sets up the ESP32 BLE Tracker component.
+# The ESP32 BLE Tracker allows the ESP32 to scan for Bluetooth Low Energy (BLE) devices.
+# It can be used to detect the presence of BLE devices and gather information about them.
+esp32_ble_tracker:
+# Define the binary sensor that will track the presence of the Bluetooth device and flash the LED 
+
+
+# Automation to flash the LED when a Bluetooth packet is detected
+binary_sensor:
+  - platform: ble_presence
+    mac_address: "AA:BB:CC:DD:EE:FF"  # Replace with the MAC address of the Bluetooth device you want to track
+    name: "Bluetooth Device Presence"
+    on_press:
+      then:
+        - light.turn_on:
+            id: m5_atom_led
+            brightness: 100%
+        - delay: 500ms
+        - light.turn_off:
+            id: m5_atom_led
