@@ -1,0 +1,21 @@
+{
+  "files.autoSave": "afterDelay",
+  "git.alwaysSignOff": true,
+  "git.autoStash": true,
+  "git.branchProtection": [
+    "main",
+    "dev"
+  ],
+  "git.branchRandomName.dictionary": [
+    "colors",
+    "animals"
+  ],
+  "git.branchRandomName.enable": true,
+  "git.enableCommitSigning": true,
+  "git.enableSmartCommit": true,
+  "git.fetchOnPull": true,
+  "git.followTagsWhenSync": true,
+  "git.pullBeforeCheckout": true,
+  "git.rebaseWhenSync": true,
+  "scm.alwaysShowRepositories": true
+}
