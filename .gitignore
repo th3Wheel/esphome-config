@@ -43,3 +43,4 @@ _ReSharper*/
 
 # Ignore Nuget packages folder
 packages/
+M5Stack/secrets.yaml
